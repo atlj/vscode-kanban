@@ -14,6 +14,23 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-kanban",
+          "title": "Kanban",
+          "icon": "./assets/table.svg"
+        }
+      ]
+    },
+    "views": {
+      "vscode-kanban": [
+        {
+          "id": "vscode-kanban-main",
+          "name": "Kanban"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "vscode-kanban.helloWorld",
