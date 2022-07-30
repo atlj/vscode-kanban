@@ -12,6 +12,7 @@
   "activationEvents": [
     "onCommand:vscode-kanban.createBoard",
     "onCommand:vscode-kanban.refreshBoards",
+    "onCommand:vscode-kanban.deleteBoard",
     "onView:vscode-kanban.activityView"
   ],
   "main": "./out/extension.js",
@@ -25,6 +26,13 @@
         {
           "command": "vscode-kanban.createBoard",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-kanban.deleteBoard",
+          "group": "inline",
+          "when": "viewItem == kanban-board"
         }
       ]
     },
@@ -64,6 +72,12 @@
         "title": "Refresh boards",
         "category": "Kanban",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "vscode-kanban.deleteBoard",
+        "title": "Delete board",
+        "category": "Kanban",
+        "icon": "$(trash)"
       }
     ]
   },

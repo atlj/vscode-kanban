@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TreeDataProvider } from "./treeDataProvider";
+import { deleteBoardItem, TreeDataProvider } from "./treeDataProvider";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("im alive");
@@ -28,6 +28,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const disposableDeleteBoard = vscode.commands.registerCommand(
+    "vscode-kanban.deleteBoard",
+    deleteBoardItem
+  );
+
   function checkBoards() {
     treeDataProvider.refresh();
   }
@@ -48,7 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
     disposableCreate,
     disposableDelete,
     disposableChange,
-    disposableRefreshBoards
+    disposableRefreshBoards,
+    disposableDeleteBoard
   );
 }
 

@@ -60,9 +60,21 @@ export class TreeDataProvider implements vscode.TreeDataProvider<BoardItem> {
 }
 
 class BoardItem extends vscode.TreeItem {
+  contextValue?: string | undefined = "kanban-board";
   constructor({ uri, label }: { uri: vscode.Uri; label: string }) {
     super(label);
     this.resourceUri = uri;
     this.tooltip = uri.path;
+    this.command = {
+      command: "vscode.openWith",
+      title: "Open Board",
+      arguments: [uri],
+    };
+  }
+}
+
+export function deleteBoardItem(item: BoardItem) {
+  if (item.resourceUri) {
+    vscode.workspace.fs.delete(item.resourceUri);
   }
 }
