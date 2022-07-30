@@ -10,31 +10,60 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vscode-kanban.helloWorld"
+    "onCommand:vscode-kanban.createBoard",
+    "onCommand:vscode-kanban.refreshBoards",
+    "onView:vscode-kanban.activityView"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "menus": {
+      "view/title": [
+        {
+          "command": "vscode-kanban.refreshBoards",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-kanban.createBoard",
+          "group": "navigation"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
           "id": "vscode-kanban",
           "title": "Kanban",
-          "icon": "./assets/table.svg"
+          "icon": "./assets/icons/table.svg"
         }
       ]
     },
     "views": {
       "vscode-kanban": [
         {
-          "id": "vscode-kanban-main",
+          "id": "vscode-kanban.activityView",
           "name": "Kanban"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "vscode-kanban.activityView",
+        "contents": "There aren't any kanban boards in this repository yet.\n[New Board](command:vscode-kanban.createBoard)",
+        "when": "vscode-kanban.noBoards"
+      }
+    ],
     "commands": [
       {
-        "command": "vscode-kanban.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-kanban.createBoard",
+        "title": "Create a new board",
+        "category": "Kanban",
+        "icon": "$(diff-insert)"
+      },
+      {
+        "command": "vscode-kanban.refreshBoards",
+        "title": "Refresh boards",
+        "category": "Kanban",
+        "icon": "$(refresh)"
       }
     ]
   },
