@@ -3,6 +3,7 @@
 
 # Production
 /out
+/assets/script
 
 # Generated files
 .docusaurus
