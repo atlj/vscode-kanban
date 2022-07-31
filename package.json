@@ -13,10 +13,23 @@
     "onCommand:vscode-kanban.createBoard",
     "onCommand:vscode-kanban.refreshBoards",
     "onCommand:vscode-kanban.deleteBoard",
-    "onView:vscode-kanban.activityView"
+    "onView:vscode-kanban.activityView",
+    "onCustomEditor:vscode-kanban.kanbanBoard"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "vscode-kanban.kanbanBoard",
+        "displayName": "Kanban Board",
+        "selector": [
+          {
+            "filenamePattern": "**/.vscode/kanban/*.json"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
     "menus": {
       "view/title": [
         {

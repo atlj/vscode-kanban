@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { KanbanBoardView } from "./kanbanBoardView";
 import { deleteBoardItem, TreeDataProvider } from "./treeDataProvider";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -49,12 +50,20 @@ export function activate(context: vscode.ExtensionContext) {
     .createFileSystemWatcher(vscode.Uri.joinPath(boardsPath, "*.json").path)
     .onDidChange(checkBoards);
 
+  const kanbanBoardView = new KanbanBoardView(context);
+
+  const disposableCustomEditor = vscode.window.registerCustomEditorProvider(
+    "vscode-kanban.kanbanBoard",
+    kanbanBoardView
+  );
+
   context.subscriptions.push(
     disposableCreate,
     disposableDelete,
     disposableChange,
     disposableRefreshBoards,
-    disposableDeleteBoard
+    disposableDeleteBoard,
+    disposableCustomEditor
   );
 }
 
