@@ -7,9 +7,7 @@ import sveltePreprocess from "svelte-preprocess";
 export default defineConfig({
   plugins: [
     svelte({
-      preprocess: sveltePreprocess({
-        typescript: true,
-      }),
+      preprocess: sveltePreprocess(),
     }),
   ],
   build: {
