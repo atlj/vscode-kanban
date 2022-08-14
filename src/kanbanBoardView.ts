@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { KanbanBoard } from ".";
+import { createParentMessageHandler } from "./parentMessageHandler";
 import { getNonce } from "./utils";
 
 export class KanbanBoardView implements vscode.CustomTextEditorProvider {
@@ -6,16 +8,14 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
 
   public async resolveCustomTextEditor(
     document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-    token: vscode.CancellationToken
+    panel: vscode.WebviewPanel
   ): Promise<void> {
-    webviewPanel.webview.options = {
-      enableScripts: true,
-    };
-
-    webviewPanel.title = document.fileName.replace(".json", "");
-
-    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+    const messageListener = createParentMessageHandler({
+      saveBoard(payload) {
+        updateTextDocument(document, payload);
+        console.log("updated document: ", JSON.stringify(payload));
+      },
+    });
 
     const disposableOnChangeDocument = vscode.workspace.onDidChangeTextDocument(
       (event) => {
@@ -25,9 +25,29 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
       }
     );
 
-    webviewPanel.onDidDispose(() => {
+    panel.onDidDispose(() => {
       disposableOnChangeDocument.dispose();
     });
+
+    this.configureWebview({
+      messageListener,
+      panel,
+    });
+  }
+
+  private configureWebview({
+    panel,
+    messageListener,
+  }: {
+    panel: vscode.WebviewPanel;
+    messageListener: ReturnType<typeof createParentMessageHandler>;
+  }): void {
+    panel.webview.options = {
+      enableScripts: true,
+    };
+    panel.webview.onDidReceiveMessage(messageListener);
+
+    panel.webview.html = this.getHtmlForWebview(panel.webview);
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
@@ -79,7 +99,7 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
 				Use a content security policy to only allow loading images from https or from our extension directory,
 				and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' ;">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' ;">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleResetUri}" rel="stylesheet" />
 				<link href="${styleVSCodeUri}" rel="stylesheet" />
@@ -94,21 +114,13 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
 			</html>`;
   }
 
-  private deleteScratch(document: vscode.TextDocument, id: string) {
-    const json = this.getDocumentAsJson(document);
-    if (!Array.isArray(json.scratches)) {
-      return;
-    }
-
-    json.scratches = json.scratches.filter((note: any) => note.id !== id);
-
-    return this.updateTextDocument(document, json);
-  }
-
-  private getDocumentAsJson(document: vscode.TextDocument): any {
+  private getDocumentAsJson(document: vscode.TextDocument): KanbanBoard {
     const text = document.getText();
     if (text.trim().length === 0) {
-      return {};
+      return {
+        dataVersion: 0,
+        columns: [],
+      };
     }
 
     try {
@@ -119,18 +131,21 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
       );
     }
   }
+}
 
-  private updateTextDocument(document: vscode.TextDocument, json: any) {
-    const edit = new vscode.WorkspaceEdit();
+function updateTextDocument(
+  document: vscode.TextDocument,
+  objectToSerialize: KanbanBoard
+) {
+  const edit = new vscode.WorkspaceEdit();
 
-    // Just replace the entire document every time for this example extension.
-    // A more complete extension should compute minimal edits instead.
-    edit.replace(
-      document.uri,
-      new vscode.Range(0, 0, document.lineCount, 0),
-      JSON.stringify(json, null, 2)
-    );
+  // Just replace the entire document every time for this example extension.
+  // A more complete extension should compute minimal edits instead.
+  edit.replace(
+    document.uri,
+    new vscode.Range(0, 0, document.lineCount, 0),
+    JSON.stringify(objectToSerialize, null, 2)
+  );
 
-    return vscode.workspace.applyEdit(edit);
-  }
+  return vscode.workspace.applyEdit(edit);
 }
