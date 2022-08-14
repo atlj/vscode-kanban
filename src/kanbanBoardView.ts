@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { KanbanBoard } from ".";
-import { createParentMessageHandler } from "./parentMessageHandler";
+import {
+  createParentMessage,
+  createParentMessageHandler,
+} from "./parentMessageHandler";
 import { getNonce } from "./utils";
 
 export class KanbanBoardView implements vscode.CustomTextEditorProvider {
@@ -13,26 +16,18 @@ export class KanbanBoardView implements vscode.CustomTextEditorProvider {
     const messageListener = createParentMessageHandler({
       saveBoard(payload) {
         updateTextDocument(document, payload);
-        console.log("updated document: ", JSON.stringify(payload));
       },
-    });
-
-    const disposableOnChangeDocument = vscode.workspace.onDidChangeTextDocument(
-      (event) => {
-        if (event.document.uri.toString() === document.uri.toString()) {
-          vscode.window.showInformationMessage(document.uri.toString());
-        }
-      }
-    );
-
-    panel.onDidDispose(() => {
-      disposableOnChangeDocument.dispose();
     });
 
     this.configureWebview({
       messageListener,
       panel,
     });
+
+    // Initialize the webview with the current state of the document
+    panel.webview.postMessage(
+      createParentMessage("setBoardData", this.getDocumentAsJson(document))
+    );
   }
 
   private configureWebview({
